@@ -1,0 +1,35 @@
+html, body { 
+    height: 100%; 
+    margin: 0; 
+    padding: 0; 
+    
+}
+
+#map { 
+    height: 100%; 
+    
+}
+#listDiv{
+    background-color: black;
+    height: 100%;
+    color:white;
+    padding-right: 0;
+    padding-left: 0;
+}
+#siteTitle{
+    border-bottom: 7px solid white;
+}
+#searchFieldInput{
+    width: 70%;
+    margin: 4px 0 0 0;
+    color: black;
+}
+.sitePost{
+    border-left: 2px solid white;
+    padding: 4px 0 4px 6px;
+    margin: 12px 0 12px 0;
+}
+.sitePost:hover {
+    border-left: 6px solid #ffff99;
+    background-color: #333333;
+}
