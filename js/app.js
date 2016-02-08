@@ -22,24 +22,30 @@ var locations =[{
                     /* ======= ViewModel ======= */
 var ViewModel = function(){
     var self = this;
+    //controls list that is dislayed in HTML 
     this.siteList = ko.observableArray([]);
+    //resets list to original full list 
     this.setAllSites = function(){
         locations.forEach(function(site){
             //push locations(site) to list view(this.siteList) 
             self.siteList.push(site);
         });
     };
+    //resets Markers to ALL display
     this.setAllMarkers = function(){
         for(var x in markers()){
             markers()[x].setMap(map);
         }
     }; 
+    //does not permanently delete marker rather changes it's setMap to not display making it invisible 
     this.removeMarker = function(x){
         markers()[x].setMap(null);
     };
     //function when user clicks on list item  
     this.setCurrentMarker = function(clickedSite){
+        //checks to see if multiple items are in list 
         if(self.siteList().length > 1){
+            //removes all other list item 
             self.siteList.removeAll();
             self.siteList.push(clickedSite);
             //update marker 
@@ -48,6 +54,7 @@ var ViewModel = function(){
                     self.removeMarker(x);
                 }
             }
+        //if user reclicks on List item the whole list resets to display all sites on list
         } else {
             self.siteList.removeAll();
             self.setAllSites();
@@ -56,25 +63,23 @@ var ViewModel = function(){
     };
     
     
-    // Sets the map on all markers in the array.
+    // query used to bind search function with subscribe ko functionality  
     this.query = ko.observable('');
+    //search function 
     this.search = function(value){
         // remove all the current sites and markers, which removes them from the view
         self.siteList.removeAll();
         
         for(var x in locations) {
-            //update list 
+            //update list and markers as user types 
             if(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0) {
                 self.siteList.push(locations[x]);
-            }
-            //remove markers that aren't being searched for 
-            if(!(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0)) {
+                markers()[x].setMap(map);
+            } else{
+                //remove markers that aren't being searched for 
                 self.removeMarker(x);
             }
-            //redisplay markers that were previously removed 
-            if(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0) {
-                markers()[x].setMap(map);
-            }
+
         }
         
         
@@ -100,7 +105,7 @@ function initMap() {
         zoom: 12
     });
     
-    // put markers on map 
+    // installing init markers on map 
     locations.forEach(function(site){
         var marker = new google.maps.Marker({
             position: site.location,
