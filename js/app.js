@@ -23,11 +23,38 @@ var locations =[{
 var ViewModel = function(){
     var self = this;
     this.siteList = ko.observableArray([]);
+    this.setAllSites = function(){
+        locations.forEach(function(site){
+            //push locations(site) to list view(this.siteList) 
+            self.siteList.push(site);
+        });
+    };
+    this.setAllMarkers = function(){
+        for(var x in markers()){
+            markers()[x].setMap(map);
+        }
+    }; 
+    this.removeMarker = function(x){
+        markers()[x].setMap(null);
+    };
+    //function when user clicks on list item  
+    this.setCurrentMarker = function(clickedSite){
+        if(self.siteList().length > 1){
+            self.siteList.removeAll();
+            self.siteList.push(clickedSite);
+            //update marker 
+            for(var x in markers()){
+                if(!(markers()[x].title == clickedSite.title)){
+                    self.removeMarker(x);
+                }
+            }
+        } else {
+            self.siteList.removeAll();
+            self.setAllSites();
+            self.setAllMarkers();
+        }
+    };
     
-    locations.forEach(function(site){
-        //push locations(site) to list view(this.siteList) 
-        self.siteList.push(site);
-    });
     
     // Sets the map on all markers in the array.
     this.query = ko.observable('');
@@ -42,7 +69,7 @@ var ViewModel = function(){
             }
             //remove markers that aren't being searched for 
             if(!(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0)) {
-                markers()[x].setMap(null);
+                self.removeMarker(x);
             }
             //redisplay markers that were previously removed 
             if(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0) {
@@ -54,7 +81,7 @@ var ViewModel = function(){
         
     };
     this.query.subscribe(this.search);
-    
+    self.setAllSites();
 };
 
 

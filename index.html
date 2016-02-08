@@ -23,7 +23,7 @@
         
         <!--import list of sites-->
         <div data-bind="foreach: siteList">
-            <div class="sitePost">
+            <div data-bind="click: $parent.setCurrentMarker"class="sitePost">
                 <h4 data-bind="text: title"></h4>
             </div>
         </div>
