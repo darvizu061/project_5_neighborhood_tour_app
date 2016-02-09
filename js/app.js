@@ -1,29 +1,49 @@
+                /* =======  API's ======= */
+var picOfSite = "";
+var flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&tag="+ picOfSite+"&per_page=4&page=1&format=json&nojsoncallback=1";
                 /* ======= Model ======= */
 //city location
 var map;
 var markers = ko.observableArray();
 var locations =[{
-    title: "Statue of Liberty",
-    location: {lat: 40.689249, lng: -74.044500}
-},{
-    title: "Grand Central Terminal",
-    location: {lat: 40.752726, lng: -73.977229}
-},{
-    title: "Rockefeller Center",
-    location: {lat: 40.758740, lng: -73.978674}
-},{
-    title: "Times Square",
-    location: {lat: 40.759011, lng: -73.984472}
-},{
-    title: "Madison Square Garden",
-    location: {lat: 40.750506, lng: -73.993394}
-}
+        title: "Statue of Liberty",
+        location: {lat: 40.689249, lng: -74.044500}
+    },{
+        title: "Grand Central Terminal",
+        location: {lat: 40.752726, lng: -73.977229}
+    },{
+        title: "Rockefeller Center",
+        location: {lat: 40.758740, lng: -73.978674}
+    },{
+        title: "Times Square",
+        location: {lat: 40.759011, lng: -73.984472}
+    },{
+        title: "Madison Square Garden",
+        location: {lat: 40.750506, lng: -73.993394}
+    },{
+        title: "Empire State Building",
+        location: {lat: 40.748441, lng: -73.985664}
+    },{
+        title:"Metropolitan Museum of Art",
+        location: {lat: 40.779187, lng: -73.963535}
+    },{
+        title: "Bryant Park",
+        location: {lat: 40.753597, lng: -73.983233}
+    },{
+        title: "World Trade Center site",
+        location: {lat: 40.711801, lng: -74.013120}
+    },{
+        title: "Frick Collection",
+        location: {lat: 40.771181, lng: -73.967350}
+    }
 ];
                     /* ======= ViewModel ======= */
 var ViewModel = function(){
     var self = this;
-    //controls list that is dislayed in HTML 
-    this.siteList = ko.observableArray([]);
+    //controls list and pictures that are dislayed in HTML 
+    this.siteList = ko.observableArray();
+    this.sitePics = ko.observableArray();
+    
     //resets list to original full list 
     this.setAllSites = function(){
         locations.forEach(function(site){
@@ -37,9 +57,22 @@ var ViewModel = function(){
             markers()[x].setMap(map);
         }
     }; 
-    //does not permanently delete marker rather changes it's setMap to not display making it invisible 
+    //does not remove marker from array rather changes it's setMap property to not display
     this.removeMarker = function(x){
         markers()[x].setMap(null);
+    };
+    this.setPictures = function(){
+        var data;
+        var imgUrl;
+        //execute JSONP request 
+        $.getJSON(flickerApi, function(data){
+            var picInfo = data.photos.photo;
+            picInfo.forEach(function(item){
+                imgUrl = 'https://farm' + item.farm + '.static.flickr.com/' + item.server + '/' + item.id + '_' + item.secret + '_m.jpg';
+                self.sitePics.push(imgUrl);
+            });        
+        }); 
+        
     };
     //function when user clicks on list item  
     this.setCurrentMarker = function(clickedSite){
@@ -53,10 +86,14 @@ var ViewModel = function(){
                 if(!(markers()[x].title == clickedSite.title)){
                     self.removeMarker(x);
                 }
+            //upload flickr images 
+            picOfSite = markers()[x].title.replace(/\s+/g, '');
             }
+            self.setPictures();
         //if user reclicks on List item the whole list resets to display all sites on list
         } else {
-            self.siteList.removeAll();
+            self.siteList.removeAll(); //removes them first to avoid making duplicates 
+            self.sitePics.removeAll(); //removes photos of site
             self.setAllSites();
             self.setAllMarkers();
         }

@@ -6,7 +6,8 @@
     <meta name="description" content=" Project 5: Neighborhood Tour">
     <meta name="author" content=" Danny Arvizu ">
     <title>Neighborhood Tour of NYC</title>
-    
+    <!--google's cdn of jquery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <!-- Bootstrap generic styling-->
     <link href="lib/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet">
     <!--main css-->
@@ -27,7 +28,12 @@
                 <h4 data-bind="text: title"></h4>
             </div>
         </div>
-
+        <div data-bind="foreach: sitePics">
+            <!--test div for import of pictures -->
+            <div class="col-xs-6">
+                <img src="" data-bind="attr:{src: $data}" class="img-responsive">
+            </div>
+        </div>
     </div>
     <div class="col-xs-9" id="map">
         <!--google map div    -->
