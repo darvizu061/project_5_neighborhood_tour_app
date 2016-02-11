@@ -1,6 +1,3 @@
-                /* =======  API's ======= */
-var picOfSite = "";
-var flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&tag="+ picOfSite+"&per_page=4&page=1&format=json&nojsoncallback=1";
                 /* ======= Model ======= */
 //city location
 var map;
@@ -40,6 +37,8 @@ var locations =[{
                     /* ======= ViewModel ======= */
 var ViewModel = function(){
     var self = this;
+    var latPlaceholder;
+    var lngPlaceholder;
     //controls list and pictures that are dislayed in HTML 
     this.siteList = ko.observableArray();
     this.sitePics = ko.observableArray();
@@ -62,16 +61,17 @@ var ViewModel = function(){
         markers()[x].setMap(null);
     };
     this.setPictures = function(){
+        var flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&sort=interestingness-asc&accuracy=15&lat="+latPlaceholder+"&lon="+lngPlaceholder+"&per_page=4&page=1&format=json&nojsoncallback=1";
         var data;
         var imgUrl;
-        //execute JSONP request 
-        $.getJSON(flickerApi, function(data){
-            var picInfo = data.photos.photo;
-            picInfo.forEach(function(item){
-                imgUrl = 'https://farm' + item.farm + '.static.flickr.com/' + item.server + '/' + item.id + '_' + item.secret + '_m.jpg';
+        $.getJSON(flickerApi, function(reply){
+            data = reply.photos.photo;
+            data.forEach(function(img){
+                imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
                 self.sitePics.push(imgUrl);
-            });        
-        }); 
+            });
+        });
+        
         
     };
     //function when user clicks on list item  
@@ -81,15 +81,17 @@ var ViewModel = function(){
             //removes all other list item 
             self.siteList.removeAll();
             self.siteList.push(clickedSite);
-            //update marker 
+            //update markers 
             for(var x in markers()){
                 if(!(markers()[x].title == clickedSite.title)){
                     self.removeMarker(x);
-                }
-            //upload flickr images 
-            picOfSite = markers()[x].title.replace(/\s+/g, '');
+                } 
+            
             }
+            latPlaceholder = clickedSite.location.lat;
+            lngPlaceholder = clickedSite.location.lng;
             self.setPictures();
+            
         //if user reclicks on List item the whole list resets to display all sites on list
         } else {
             self.siteList.removeAll(); //removes them first to avoid making duplicates 
