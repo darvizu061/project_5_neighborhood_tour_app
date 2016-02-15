@@ -4,34 +4,44 @@ var map;
 var markers = ko.observableArray();
 var locations =[{
         title: "Statue of Liberty",
-        location: {lat: 40.689249, lng: -74.044500}
+        location: {lat: 40.689249, lng: -74.044500},
+        pictures: []
     },{
         title: "Grand Central Terminal",
-        location: {lat: 40.752726, lng: -73.977229}
+        location: {lat: 40.752726, lng: -73.977229},
+        pictures: []
     },{
         title: "Rockefeller Center",
-        location: {lat: 40.758740, lng: -73.978674}
+        location: {lat: 40.758740, lng: -73.978674},
+        pictures: []
     },{
         title: "Times Square",
-        location: {lat: 40.759011, lng: -73.984472}
+        location: {lat: 40.759011, lng: -73.984472},
+        pictures: []
     },{
         title: "Madison Square Garden",
-        location: {lat: 40.750506, lng: -73.993394}
+        location: {lat: 40.750506, lng: -73.993394},
+        pictures: []
     },{
         title: "Empire State Building",
-        location: {lat: 40.748441, lng: -73.985664}
+        location: {lat: 40.748441, lng: -73.985664},
+        pictures: []
     },{
         title:"Metropolitan Museum of Art",
-        location: {lat: 40.779187, lng: -73.963535}
+        location: {lat: 40.779187, lng: -73.963535},
+        pictures: []
     },{
         title: "Bryant Park",
-        location: {lat: 40.753597, lng: -73.983233}
+        location: {lat: 40.753597, lng: -73.983233},
+        pictures: []
     },{
         title: "World Trade Center site",
-        location: {lat: 40.711801, lng: -74.013120}
+        location: {lat: 40.711801, lng: -74.013120},
+        pictures: []
     },{
         title: "Frick Collection",
-        location: {lat: 40.771181, lng: -73.967350}
+        location: {lat: 40.771181, lng: -73.967350},
+        pictures: []
     }
 ];
                     /* ======= ViewModel ======= */
@@ -42,14 +52,7 @@ var ViewModel = function(){
     this.siteList = ko.observableArray();
     this.sitePics = ko.observableArray();
     
-    //sets list to original full list 
-    this.setAllSites = function(){
-        locations.forEach(function(site){
-            //push locations(site) to list view(this.siteList) 
-            self.siteList.push(site);
-        });
-    };
-    this.setAllPictures = function(){
+    this.initView = function(){
         //declare basic var's
         var flickerApi, data, imgUrl, tag;
         locations.forEach(function(site){
@@ -59,17 +62,25 @@ var ViewModel = function(){
             
             //call api and get photos 
             $.getJSON(flickerApi, function(reply){
-            data = reply.photos.photo;
-            data.forEach(function(img){
-                imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
-                console.log(imgUrl);
-                
+                data = reply.photos.photo;
+                data.forEach(function(img){
+                    imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
+                    site.pictures.push(imgUrl);
+                    
                 });
             });
+            self.siteList.push(site);
+        });
+    };
+    //resets list to original full list 
+    this.restoreList = function(){
+        locations.forEach(function(site){
+            
+            self.siteList.push(site);
         });
     };
     //resets Markers to ALL display
-    this.setAllMarkers = function(){
+    this.restoreMarkers = function(){
         for(var x in markers()){
             markers()[x].setMap(map);
         }
@@ -78,9 +89,7 @@ var ViewModel = function(){
     this.removeMarker = function(x){
         markers()[x].setMap(null);
     };
-    this.setPictures = function(obj){
-        
-    };
+    
     //function when user clicks on list item  
     this.setCurrentMarker = function(clickedSite){
         //checks to see if multiple items are in list 
@@ -88,21 +97,25 @@ var ViewModel = function(){
             //removes all other list item 
             self.siteList.removeAll();
             self.siteList.push(clickedSite);
+            
             //update markers 
             for(var x in markers()){
                 if(!(markers()[x].title == clickedSite.title)){
                     self.removeMarker(x);
                 } 
-            
             }
-            // self.setPictures(clickedSite);
+            //update pictures 
+            clickedSite.pictures.forEach(function(link){
+                self.sitePics.push(link);
+            });
             
         //if user reclicks on List item the whole list resets to display all sites on list
         } else {
             self.siteList.removeAll(); //removes them first to avoid making duplicates 
-            self.sitePics.removeAll(); //removes photos of site
-            self.setAllSites();
-            self.setAllMarkers();
+            self.sitePics.removeAll();
+            
+            self.restoreList();
+            self.restoreMarkers();
         }
     };
     
@@ -130,8 +143,7 @@ var ViewModel = function(){
         
     };
     this.query.subscribe(this.search);
-    self.setAllSites();
-    self.setAllPictures();
+    self.initView();
 };
 
 
