@@ -37,17 +37,35 @@ var locations =[{
                     /* ======= ViewModel ======= */
 var ViewModel = function(){
     var self = this;
-    var latPlaceholder;
-    var lngPlaceholder;
+    
     //controls list and pictures that are dislayed in HTML 
     this.siteList = ko.observableArray();
     this.sitePics = ko.observableArray();
     
-    //resets list to original full list 
+    //sets list to original full list 
     this.setAllSites = function(){
         locations.forEach(function(site){
             //push locations(site) to list view(this.siteList) 
             self.siteList.push(site);
+        });
+    };
+    this.setAllPictures = function(){
+        //declare basic var's
+        var flickerApi, data, imgUrl, tag;
+        locations.forEach(function(site){
+            //set tag as obj title without spaces
+            tag = site.title.replace(/\s/g, '');
+            flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&sort=interestingness-asc&tags="+ tag +"&per_page=4&page=1&format=json&nojsoncallback=1";
+            
+            //call api and get photos 
+            $.getJSON(flickerApi, function(reply){
+            data = reply.photos.photo;
+            data.forEach(function(img){
+                imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
+                console.log(imgUrl);
+                
+                });
+            });
         });
     };
     //resets Markers to ALL display
@@ -60,18 +78,7 @@ var ViewModel = function(){
     this.removeMarker = function(x){
         markers()[x].setMap(null);
     };
-    this.setPictures = function(){
-        var flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&sort=interestingness-asc&accuracy=15&lat="+latPlaceholder+"&lon="+lngPlaceholder+"&per_page=4&page=1&format=json&nojsoncallback=1";
-        var data;
-        var imgUrl;
-        $.getJSON(flickerApi, function(reply){
-            data = reply.photos.photo;
-            data.forEach(function(img){
-                imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
-                self.sitePics.push(imgUrl);
-            });
-        });
-        
+    this.setPictures = function(obj){
         
     };
     //function when user clicks on list item  
@@ -88,9 +95,7 @@ var ViewModel = function(){
                 } 
             
             }
-            latPlaceholder = clickedSite.location.lat;
-            lngPlaceholder = clickedSite.location.lng;
-            self.setPictures();
+            // self.setPictures(clickedSite);
             
         //if user reclicks on List item the whole list resets to display all sites on list
         } else {
@@ -126,6 +131,7 @@ var ViewModel = function(){
     };
     this.query.subscribe(this.search);
     self.setAllSites();
+    self.setAllPictures();
 };
 
 
