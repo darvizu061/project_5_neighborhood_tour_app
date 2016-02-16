@@ -72,6 +72,7 @@ var ViewModel = function(){
             self.siteList.push(site);
         });
     };
+
     //resets list to original full list 
     this.restoreList = function(){
         locations.forEach(function(site){
@@ -89,6 +90,15 @@ var ViewModel = function(){
     this.removeMarker = function(x){
         markers()[x].setMap(null);
     };
+    //add event listener to all markers
+    // this.addEventListener = function(){
+    //     markers().forEach(function(marker){
+    //         marker.addListener('click', function(){
+    //         console.log(marker.title);
+    //         });
+    //     });
+    //     console.log("it's working");
+    // };
     
     //function when user clicks on list item  
     this.setCurrentMarker = function(clickedSite){
@@ -119,7 +129,28 @@ var ViewModel = function(){
         }
     };
     
-    
+    this.drawMap = function(){
+        //set map equal to NYC location 
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 40.768582, lng: -73.980560},
+            map: map,
+            zoom: 12
+        });
+        
+        // installing init markers on map 
+        locations.forEach(function(site){
+            var marker = new google.maps.Marker({
+                position: site.location,
+                map: map,
+                title: site.title
+            });
+            
+            marker.addListener('click', function(){
+                console.log(marker.title);
+            });
+            markers.push(marker);
+        });
+    };
     // query used to bind search function with subscribe ko functionality  
     this.query = ko.observable('');
     //search function 
@@ -145,6 +176,7 @@ var ViewModel = function(){
     this.query.subscribe(this.search);
     
     self.initView();
+    self.drawMap();
 };
 
 
@@ -155,24 +187,4 @@ var ViewModel = function(){
  * with ALL markers displaying on app load request. 
  */
  
-function initMap() {
-    //set map equal to NYC location 
-    map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 40.768582, lng: -73.980560},
-        map: map,
-        zoom: 12
-    });
-    
-    // installing init markers on map 
-    locations.forEach(function(site){
-        var marker = new google.maps.Marker({
-            position: site.location,
-            map: map,
-            title: site.title
-        });
-        markers.push(marker);
-    });
-    
-    
-}
 ko.applyBindings(new ViewModel())
