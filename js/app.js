@@ -1,4 +1,4 @@
-                /* ======= Model ======= */
+                    /* ======= Model ======= */
 //city location
 var map;
 var markers = ko.observableArray();
@@ -42,6 +42,10 @@ var locations =[{
         title: "Frick Collection",
         location: {lat: 40.771181, lng: -73.967350},
         pictures: []
+    },{
+        title: "Yankee Stadium",
+        location: {lat: 40.828819, lng: -73.926569},
+        pictures: []
     }
 ];
                     /* ======= ViewModel ======= */
@@ -71,6 +75,8 @@ var ViewModel = function(){
             });
             self.siteList.push(site);
         });
+        //draw google map
+        self.drawMap();
     };
 
     //resets list to original full list 
@@ -80,28 +86,26 @@ var ViewModel = function(){
             self.siteList.push(site);
         });
     };
-    //resets Markers to ALL display
-    this.restoreMarkers = function(){
-        for(var x in markers()){
-            markers()[x].setMap(map);
-        }
+    //changes it's setMap property to display
+    this.restoreMarker = function(x){
+        markers()[x].setMap(map);
     }; 
     //does not remove marker from array rather changes it's setMap property to not display
     this.removeMarker = function(x){
         markers()[x].setMap(null);
     };
-    //add event listener to all markers
-    // this.addEventListener = function(){
-    //     markers().forEach(function(marker){
-    //         marker.addListener('click', function(){
-    //         console.log(marker.title);
-    //         });
-    //     });
-    //     console.log("it's working");
-    // };
-    
+    // toogle marker bounce animation 
+    this.toggleAnimation = function(marker){
+        if (marker.getAnimation() !== null) {
+            marker.setAnimation(null);
+        } else {
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+        }
+    };
     //function when user clicks on list item  
     this.setCurrentMarker = function(clickedSite){
+        //var x used for 'for loops'
+        var x;
         //checks to see if multiple items are in list 
         if(self.siteList().length > 1){
             //removes all other list item 
@@ -109,10 +113,12 @@ var ViewModel = function(){
             self.siteList.push(clickedSite);
             
             //update markers 
-            for(var x in markers()){
+            for(x in markers()){
                 if(!(markers()[x].title == clickedSite.title)){
                     self.removeMarker(x);
-                } 
+                } else {
+                    self.toggleAnimation(markers()[x]);
+                }
             }
             //update pictures 
             clickedSite.pictures.forEach(function(link){
@@ -121,14 +127,31 @@ var ViewModel = function(){
             
         //if user reclicks on List item the whole list resets to display all sites on list
         } else {
-            self.siteList.removeAll(); //removes them first to avoid making duplicates 
-            self.sitePics.removeAll();
+            //for loop toogles animation off and restores markers 
+            for(x in markers()){
+                if(!(markers()[x].title == clickedSite.title)){
+                    self.restoreMarker(x);
+                } else {
+                    self.toggleAnimation(markers()[x]);
+                }
+            }
             
+            self.siteList.removeAll(); //removes them first to avoid making duplicates 
             self.restoreList();
-            self.restoreMarkers();
+            
+            self.sitePics.removeAll(); //remove images from screen
+            
+            
         }
     };
     
+    
+                /* ======= GOOGLE MAP API ======= */
+    /*!
+    * Initializing Google Map 
+    * centered on New York city.
+    */
+ 
     this.drawMap = function(){
         //set map equal to NYC location 
         map = new google.maps.Map(document.getElementById('map'), {
@@ -137,19 +160,23 @@ var ViewModel = function(){
             zoom: 12
         });
         
-        // installing init markers on map 
+        // installing original markers on map 
         locations.forEach(function(site){
             var marker = new google.maps.Marker({
                 position: site.location,
+                animation: google.maps.Animation.DROP,
                 map: map,
                 title: site.title
             });
             
+            //binding setCurrentMarker function to marker click event
             marker.addListener('click', function(){
-                console.log(marker.title);
+                self.setCurrentMarker(site);
+                
             });
             markers.push(marker);
         });
+        
     };
     // query used to bind search function with subscribe ko functionality  
     this.query = ko.observable('');
@@ -176,15 +203,9 @@ var ViewModel = function(){
     this.query.subscribe(this.search);
     
     self.initView();
-    self.drawMap();
 };
 
 
 
-/*!
- * Initializing Google Map 
- * centered on New York city 
- * with ALL markers displaying on app load request. 
- */
- 
+
 ko.applyBindings(new ViewModel())
