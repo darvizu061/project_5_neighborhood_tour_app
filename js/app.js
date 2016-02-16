@@ -143,8 +143,10 @@ var ViewModel = function(){
         
     };
     this.query.subscribe(this.search);
+    
     self.initView();
 };
+
 
 
 /*!
@@ -153,7 +155,6 @@ var ViewModel = function(){
  * with ALL markers displaying on app load request. 
  */
  
-
 function initMap() {
     //set map equal to NYC location 
     map = new google.maps.Map(document.getElementById('map'), {
