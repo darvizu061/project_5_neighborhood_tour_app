@@ -82,7 +82,6 @@ var ViewModel = function(){
     //resets list to original full list 
     this.restoreList = function(){
         locations.forEach(function(site){
-            
             self.siteList.push(site);
         });
     };
@@ -144,14 +143,34 @@ var ViewModel = function(){
             
         }
     };
-    
+    // query used to bind search function with subscribe ko functionality  
+    this.query = ko.observable('');
+    //search function 
+    this.search = function(value){
+        // remove all the current sites and markers, which removes them from the view
+        self.siteList.removeAll();
+        
+        for(var x in locations) {
+            //update list and markers as user types 
+            if(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0) {
+                self.siteList.push(locations[x]);
+                markers()[x].setMap(map);
+            } else{
+                //remove markers that aren't being searched for 
+                self.removeMarker(x);
+            }
+
+        }
+        
+        
+        
+    };
+    //bind query to search function with knockoutjs
+    this.query.subscribe(this.search);
     
                 /* ======= GOOGLE MAP API ======= */
-    /*!
-    * Initializing Google Map 
-    * centered on New York city.
-    */
- 
+
+    //draw google map  
     this.drawMap = function(){
         //set map equal to NYC location 
         map = new google.maps.Map(document.getElementById('map'), {
@@ -178,30 +197,11 @@ var ViewModel = function(){
         });
         
     };
-    // query used to bind search function with subscribe ko functionality  
-    this.query = ko.observable('');
-    //search function 
-    this.search = function(value){
-        // remove all the current sites and markers, which removes them from the view
-        self.siteList.removeAll();
-        
-        for(var x in locations) {
-            //update list and markers as user types 
-            if(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0) {
-                self.siteList.push(locations[x]);
-                markers()[x].setMap(map);
-            } else{
-                //remove markers that aren't being searched for 
-                self.removeMarker(x);
-            }
-
-        }
-        
-        
-        
-    };
-    this.query.subscribe(this.search);
     
+    
+    /*!
+    * Initializing List and Google Map
+    */
     self.initView();
 };
 

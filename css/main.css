@@ -2,7 +2,7 @@ html, body {
     height: 100%; 
     margin: 0; 
     padding: 0; 
-    
+    font-family: 'Poiret One', cursive;
 }
 
 #map { 
@@ -34,4 +34,5 @@ html, body {
 .sitePost:hover {
     border-left: 6px solid #ffff99;
     background-color: #333333;
+    color: #ffff99;
 }
