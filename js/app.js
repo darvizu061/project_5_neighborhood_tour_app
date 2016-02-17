@@ -55,30 +55,75 @@ var ViewModel = function(){
     //controls list and pictures that are dislayed in HTML 
     this.siteList = ko.observableArray();
     this.sitePics = ko.observableArray();
+    this.siteInfo = ko.observableArray();
     
-    this.initView = function(){
-        //declare basic var's
-        var flickerApi, data, imgUrl, tag;
+    this.initListView = function(){
         locations.forEach(function(site){
-            //set tag as obj title without spaces
-            tag = site.title.replace(/\s/g, '');
-            flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&sort=interestingness-asc&tags="+ tag +"&per_page=4&page=1&format=json&nojsoncallback=1";
-            
-            //call api and get photos 
-            $.getJSON(flickerApi, function(reply){
-                data = reply.photos.photo;
-                data.forEach(function(img){
-                    imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
-                    site.pictures.push(imgUrl);
-                    
-                });
-            });
             self.siteList.push(site);
         });
-        //draw google map
+        // INITIALIZE
+        self.getSitePhotos();
+        self.getSiteExtract();
         self.drawMap();
     };
-
+    
+    //get photo url's for locations using FLICKER API
+    this.getSitePhotos = function(){
+        var flickerApi, imgUrl, flickertag, data1;
+        locations.forEach(function(site){
+                                                       // ****FLICKER API**** 
+            //set tag as obj title without spaces
+            flickertag = site.title.replace(/\s/g, '');
+            
+            flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&sort=interestingness-asc&tags="+ flickertag +"&per_page=4&page=1&format=json&nojsoncallback=1";
+            
+            
+            $.ajax({
+                type: "GET",
+                data: data1,
+                url: flickerApi,
+                success: function(data){
+                    data1 = data.photos.photo;
+                    data1.forEach(function(img){
+                        imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
+                        site.pictures.push(imgUrl);
+                    });
+                }
+            });
+        });
+    };
+    //get wikipedia site extract for markers' infowindows
+    this.getSiteExtract = function(){
+        var wikiApi, wikitag, data1;
+        
+        locations.forEach(function(site){
+                                                       // ****WIKIPEDIA API****
+            //set tag as obj title without spaces
+            wikitag = site.title.replace(/\s/g,'+');
+            
+            wikiApi = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles="+wikitag+"&exsentences=2";
+            
+            //call api and get site extract from wikipedia  
+            $.ajax({
+                type: "GET",
+                data: data1,
+                url: wikiApi,
+                contentType: 'text/plain',
+                withCredentials: false,
+                crossDomain: true,
+                dataType: 'jsonp',
+                success: function(data){
+                    data1 = data.query.pages[Object.keys(data.query.pages)[0]].extract;
+                    
+                    //create marker with infowindow as Data1
+                    self.newInfoWindow(data1);
+                    self.newMarker(site.location, site.title, site);
+                    
+                }
+                
+            });
+        });
+    };
     //resets list to original full list 
     this.restoreList = function(){
         locations.forEach(function(site){
@@ -117,6 +162,7 @@ var ViewModel = function(){
                     self.removeMarker(x);
                 } else {
                     self.toggleAnimation(markers()[x]);
+                    self.siteInfo()[x].open(map, markers()[x]);
                 }
             }
             //update pictures 
@@ -132,6 +178,7 @@ var ViewModel = function(){
                     self.restoreMarker(x);
                 } else {
                     self.toggleAnimation(markers()[x]);
+                    self.siteInfo()[x].close(map, markers()[x]);
                 }
             }
             
@@ -179,30 +226,32 @@ var ViewModel = function(){
             zoom: 12
         });
         
-        // installing original markers on map 
-        locations.forEach(function(site){
-            var marker = new google.maps.Marker({
-                position: site.location,
-                animation: google.maps.Animation.DROP,
-                map: map,
-                title: site.title
-            });
-            
-            //binding setCurrentMarker function to marker click event
-            marker.addListener('click', function(){
-                self.setCurrentMarker(site);
-                
-            });
-            markers.push(marker);
-        });
-        
     };
-    
+    this.newInfoWindow = function(content){
+        var infowindow = new google.maps.InfoWindow({
+            content: content
+        });
+        self.siteInfo.push(infowindow);
+    };
+    this.newMarker = function(position, title, site){
+        var marker = new google.maps.Marker({
+            position: position,
+            animation: google.maps.Animation.DROP,
+            map: map,
+            title: title
+        });
+        //binding setCurrentMarker function to marker click event
+        marker.addListener('click', function(){
+            self.setCurrentMarker(site);
+            
+        });
+        markers.push(marker);
+    };
     
     /*!
     * Initializing List and Google Map
     */
-    self.initView();
+    self.initListView();
 };
 
 
