@@ -52,11 +52,11 @@ var locations =[{
 var ViewModel = function(){
     var self = this;
     
-    //controls list and pictures that are dislayed in HTML 
+    //controls list, pictures, and infowindows that are dislayed in HTML 
     this.siteList = ko.observableArray();
     this.sitePics = ko.observableArray();
     this.siteInfo = ko.observableArray();
-    
+    //set side list view 
     this.initListView = function(){
         locations.forEach(function(site){
             self.siteList.push(site);
@@ -66,7 +66,6 @@ var ViewModel = function(){
         self.getSiteExtract();
         self.drawMap();
     };
-    
     //get photo url's for locations using FLICKER API
     this.getSitePhotos = function(){
         var flickerApi, imgUrl, flickertag, data1;
@@ -75,8 +74,7 @@ var ViewModel = function(){
             //set tag as obj title without spaces
             flickertag = site.title.replace(/\s/g, '');
             
-            flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&sort=interestingness-asc&tags="+ flickertag +"&per_page=4&page=1&format=json&nojsoncallback=1";
-            
+            flickerApi = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=8464c6c6332cf769ce0a9f0d5b55fd91&sort=interestingness-asc&tags="+ flickertag +"&per_page=10&page=1&format=json&nojsoncallback=1";
             
             $.ajax({
                 type: "GET",
@@ -88,6 +86,9 @@ var ViewModel = function(){
                         imgUrl = 'https://farm' + img.farm + '.static.flickr.com/' + img.server + '/' + img.id + '_' + img.secret + '.jpg';
                         site.pictures.push(imgUrl);
                     });
+                },
+                error: function(){
+                    alert("We're sorry but the Flickr API failed to download photos of "+site.title+" in New York City");
                 }
             });
         });
@@ -101,8 +102,7 @@ var ViewModel = function(){
             //set tag as obj title without spaces
             wikitag = site.title.replace(/\s/g,'+');
             
-            wikiApi = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles="+wikitag+"&exsentences=2";
-            
+            wikiApi = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles="+wikitag+"&exsentences=2&explaintext=1";
             //call api and get site extract from wikipedia  
             $.ajax({
                 type: "GET",
@@ -119,6 +119,9 @@ var ViewModel = function(){
                     self.newInfoWindow(data1);
                     self.newMarker(site.location, site.title, site);
                     
+                },
+                error: function(){
+                    alert("We're sorry but the WIKIPEDIA API failed to download extract of "+site.title+" in New York City");
                 }
                 
             });

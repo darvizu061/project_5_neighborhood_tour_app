@@ -36,3 +36,8 @@ html, body {
     background-color: #333333;
     color: #ffff99;
 }
+.sitePost:active {
+    border-left: 6px solid #ffff99;
+    background-color: #333333;
+    color: #ffff99;
+}
