@@ -64,7 +64,6 @@ var ViewModel = function(){
         // INITIALIZE
         self.getSitePhotos();
         self.getSiteExtract();
-        self.drawMap();
     };
     //get photo url's for locations using FLICKER API
     this.getSitePhotos = function(){
@@ -112,6 +111,7 @@ var ViewModel = function(){
                 withCredentials: false,
                 crossDomain: true,
                 dataType: 'jsonp',
+                timeout: 2000, //timeout is used to call error funtion since jsonp datatypes don't directly support error handlers 
                 success: function(data){
                     data1 = data.query.pages[Object.keys(data.query.pages)[0]].extract;
                     
@@ -212,24 +212,11 @@ var ViewModel = function(){
 
         }
         
-        
-        
     };
     //bind query to search function with knockoutjs
     this.query.subscribe(this.search);
-    
-                /* ======= GOOGLE MAP API ======= */
 
-    //draw google map  
-    this.drawMap = function(){
-        //set map equal to NYC location 
-        map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 40.768582, lng: -73.980560},
-            map: map,
-            zoom: 12
-        });
-        
-    };
+    
     this.newInfoWindow = function(content){
         var infowindow = new google.maps.InfoWindow({
             content: content
@@ -256,8 +243,18 @@ var ViewModel = function(){
     */
     self.initListView();
 };
-
-
-
+                                /* ======= GOOGLE MAP API ======= */
+function initMap(){
+    
+    //set map equal to NYC location 
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 40.758740, lng: -73.978674},
+        map: map,
+        zoom: 11
+    });
+}
+function mapsError(){
+    alert("We're sorry but the Google Map failed to load");
+}
 
 ko.applyBindings(new ViewModel())

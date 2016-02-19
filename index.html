@@ -53,11 +53,13 @@
     <script src="lib/bootstrap-3.3.6/js/bootstrap.min.js"></script>
     <!--include knockout.js -->
     <script src="lib/knockout-3.4.0.js"></script>
-    <!--Include google maps API -->
-    <script  
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCXItn9tYL0iGSOR4YdxJpDff-q0AIDAE&libraries=places">
-    </script>
     <!--main javascript for web app-->
     <script type="text/javascript" src="js/app.min.js"></script>
+    <!--Include google maps API -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCXItn9tYL0iGSOR4YdxJpDff-q0AIDAE&libraries=places&callback=initMap" onerror="mapsError()">
+    </script>
+    
+    
 </body>
 </html>
